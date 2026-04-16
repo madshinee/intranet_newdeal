@@ -1,0 +1,71 @@
+name: K8s Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - k8s
+
+env:
+  IMAGE_NAME: intranet-newdeal
+  IMAGE_TAG: 1.0.0
+  DOCKER_REGISTRY: madara3
+  NAMESPACE: default
+
+jobs:
+  # ===============================
+  # JOB 1 - DÉPLOYEMENT KUBERNETES
+  # ===============================
+  k8s-deploy:
+    runs-on: self-hosted
+    env:
+      IMAGE_NAME: ${{ env.IMAGE_NAME }}
+      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}
+      NAMESPACE: ${{ env.NAMESPACE }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Verify kubectl connection
+        run: |
+          echo "Vérification de la connexion Kubernetes..."
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to Kubernetes
+        run: |
+          echo "Déploiement de l'application sur Kubernetes..."
+          kubectl apply -f k8s/deployment.yaml -n ${{ env.NAMESPACE }}
+
+      - name: Wait for deployment
+        run: |
+          echo "Attente du déploiement..."
+          kubectl rollout status deployment/intranet-newdeal -n ${{ env.NAMESPACE }} --timeout=300s
+
+      - name: Verify pods
+        run: |
+          echo "Vérification des pods..."
+          kubectl get pods -n ${{ env.NAMESPACE }} -l app=intranet-newdeal
+
+      - name: Verify service
+        run: |
+          echo "Vérification du service..."
+          kubectl get services -n ${{ env.NAMESPACE }}
+
+      - name: Port forwarding for testing
+        run: |
+          echo "Configuration du port forwarding..."
+          kubectl port-forward service/intranet-newdeal-service 8080:80 -n ${{ env.NAMESPACE }} &
+          sleep 5
+          echo "Application accessible sur http://localhost:8080"
+
+      - name: Test deployment
+        run: |
+          echo "Test du déploiement..."
+          curl -f http://localhost:8080 || exit 1
+          echo "✅ Déploiement réussi !"
