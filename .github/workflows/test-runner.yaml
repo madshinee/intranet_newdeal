@@ -1,0 +1,13 @@
+name: Test Runner
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - name: Echo test
+        run: echo "Runner works! $(date)"
