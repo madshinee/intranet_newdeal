@@ -28,7 +28,7 @@ jobs:
       - name: Security scan - Vulnerabilities
         run: |
           echo "Scan de sécurité sur prod..."
-          docker run --rm ghcr.io/aquasecurity/trivy:latest image ^
+          docker run --rm ghcr.io/aquasecurity/trivy:latest image \
             ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || exit 0
 
   # ===============================
