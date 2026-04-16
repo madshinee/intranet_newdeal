@@ -60,12 +60,17 @@ jobs:
       - name: Port forwarding for testing
         run: |
           echo "Configuration du port forwarding..."
-          kubectl port-forward service/intranet-newdeal-service 8080:80 -n ${{ env.NAMESPACE }} &
-          sleep 5
+          Start-Job -ScriptBlock { kubectl port-forward service/intranet-newdeal-service 8080:80 -n ${{ env.NAMESPACE }} }
+          Start-Sleep -Seconds 5
           echo "Application accessible sur http://localhost:8080"
 
       - name: Test deployment
         run: |
           echo "Test du déploiement..."
-          curl -f http://localhost:8080 || exit 1
-          echo "✅ Déploiement réussi !"
+          try {
+            Invoke-WebRequest -Uri http://localhost:8080 -Method HEAD | Out-Null
+            echo "✅ Déploiement réussi !"
+          } catch {
+            Write-Error "❌ Échec du test de déploiement"
+            exit 1
+          }
