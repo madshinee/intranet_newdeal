@@ -28,9 +28,8 @@ jobs:
       - name: Security scan - Vulnerabilities
         run: |
           echo "Scan de sécurité sur prod..."
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD:/tmp/.cache/ aquasec/trivy:latest image \
-            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
+          docker run --rm aquasec/trivy:latest image ^
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || exit 0
 
   # ===============================
   # JOB 2 - DÉPLOIEMENT SUR RUNNER 'runner_prod'
@@ -52,12 +51,12 @@ jobs:
           docker pull ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
       - name: Stop existing container
-        run: |
-          docker stop intranet-app || true
+        run: docker stop intranet-app
+        continue-on-error: true
 
       - name: Remove old container
-        run: |
-          docker rm intranet-app || true
+        run: docker rm intranet-app
+        continue-on-error: true
 
       - name: Run new container (exposer sur port 80)
         run: |
