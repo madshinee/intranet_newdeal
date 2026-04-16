@@ -37,7 +37,7 @@ jobs:
   # ===============================
   deploy:
     needs: security-scan
-    runs-on: runner_prod
+    runs-on: self-hosted
 
     steps:
       - name: Checkout source code
