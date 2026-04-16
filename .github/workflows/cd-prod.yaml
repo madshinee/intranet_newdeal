@@ -38,6 +38,10 @@ jobs:
   deploy:
     needs: security-scan
     runs-on: self-hosted
+    env:
+      IMAGE_NAME: ${{ env.IMAGE_NAME }}
+      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}
 
     steps:
       - name: Checkout source code
