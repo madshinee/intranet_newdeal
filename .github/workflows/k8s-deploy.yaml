@@ -18,10 +18,10 @@ jobs:
   k8s-deploy:
     runs-on: self-hosted
     env:
-      IMAGE_NAME: ${{ env.IMAGE_NAME }}
-      IMAGE_TAG: ${{ env.IMAGE_TAG }}
-      DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}
-      NAMESPACE: ${{ env.NAMESPACE }}
+      IMAGE_NAME: intranet-newdeal
+      IMAGE_TAG: 1.0.0
+      DOCKER_REGISTRY: madara3
+      NAMESPACE: default
 
     steps:
       - name: Checkout source code
