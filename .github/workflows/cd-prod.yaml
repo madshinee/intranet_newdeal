@@ -36,7 +36,7 @@ jobs:
   # ===============================
   deploy:
     needs: security-scan
-    runs-on: self-hosted
+    runs-on: runner_prod
     env:
       IMAGE_NAME: ${{ env.IMAGE_NAME }}
       IMAGE_TAG: ${{ env.IMAGE_TAG }}
