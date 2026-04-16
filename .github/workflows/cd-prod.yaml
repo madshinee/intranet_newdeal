@@ -60,7 +60,7 @@ jobs:
 
       - name: Run new container (exposer sur port 80)
         run: |
-          docker run -d \
-            -p 80:80 \
-            --name intranet-app \
+          docker run -d `
+            -p 80:80 `
+            --name intranet-app `
             ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
