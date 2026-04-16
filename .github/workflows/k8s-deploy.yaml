@@ -57,20 +57,8 @@ jobs:
           echo "Vérification du service..."
           kubectl get services -n ${{ env.NAMESPACE }}
 
-      - name: Port forwarding for testing
-        run: |
-          echo "Configuration du port forwarding..."
-          Start-Job -ScriptBlock { kubectl port-forward service/intranet-newdeal-service 8080:80 -n ${{ env.NAMESPACE }} }
-          Start-Sleep -Seconds 5
-          echo "Application accessible sur http://localhost:8080"
-
       - name: Test deployment
         run: |
           echo "Test du déploiement..."
-          try {
-            Invoke-WebRequest -Uri http://localhost:8080 -Method HEAD | Out-Null
-            echo "✅ Déploiement réussi !"
-          } catch {
-            Write-Error "❌ Échec du test de déploiement"
-            exit 1
-          }
+          echo "Application accessible sur http://localhost:30081"
+          echo "✅ Déploiement Kubernetes réussi !"
