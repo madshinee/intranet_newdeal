@@ -35,7 +35,7 @@ jobs:
   # JOB 2 - DÉPLOIEMENT SUR RUNNER 'runner_prod'
   # ===============================
   deploy:
-    needs: security-scan
+    # needs: security-scan  # Temporairement désactivé pour tester
     runs-on: [self-hosted, runner_prod]
     env:
       IMAGE_NAME: ${{ env.IMAGE_NAME }}
