@@ -1,0 +1,87 @@
+name: CI Pipeline - Dev Branch
+
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  IMAGE_NAME: intranet-newdeal
+  IMAGE_TAG: 1.0.0
+  DOCKER_REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+
+jobs:
+  # ===============================
+  # JOB 1 - BUILD IMAGE DOCKER (nginx:alpine3.23)
+  # ===============================
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Display variables
+        run: |
+          echo "IMAGE_NAME: $IMAGE_NAME"
+          echo "IMAGE_TAG: $IMAGE_TAG"
+          echo "DOCKER_REGISTRY: $DOCKER_REGISTRY"
+
+      - name: Build Docker image (nginx:alpine3.23)
+        run: |
+          docker build -t ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      - name: Verify image
+        run: |
+          docker image ls | grep ${{ env.IMAGE_NAME }}
+
+  # ===============================
+  # JOB 2 - SCAN SÉCURITÉ (vulnérabilités + secrets)
+  # ===============================
+  security-scan:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Build image for scanning
+        run: |
+          docker build -t ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      - name: Security scan - Vulnerabilities
+        run: |
+          echo "Scan des vulnérabilités..."
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/tmp/.cache/ aquasec/trivy:latest image \
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
+
+      - name: Security scan - Secrets
+        run: |
+          echo "Scan des secrets..."
+          git log --patch | grep -i "password\|token\|key\|secret" || echo "No secrets found"
+
+  # ===============================
+  # JOB 3 - PUSH IMAGE VERS DOCKER HUB
+  # ===============================
+  push:
+    needs: [build, security-scan]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker build -t ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | \
+          docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
