@@ -35,12 +35,12 @@ jobs:
   # JOB 2 - DÉPLOIEMENT SUR RUNNER 'runner_prod'
   # ===============================
   deploy:
-    # needs: security-scan  # Temporairement désactivé pour tester
+    needs: security-scan
     runs-on: [self-hosted, runner_prod]
     env:
-      IMAGE_NAME: ${{ env.IMAGE_NAME }}
-      IMAGE_TAG: ${{ env.IMAGE_TAG }}
-      DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}
+      IMAGE_NAME: intranet-newdeal
+      IMAGE_TAG: 1.0.0
+      DOCKER_REGISTRY: madara3
 
     steps:
       - name: Checkout source code
